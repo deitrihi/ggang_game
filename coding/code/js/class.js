@@ -2,20 +2,22 @@ class Hero {
     constructor(el) {
         this.el = document.querySelector(el);
         this.movex = 0;
-        this.speed = 8;
-        //console.log(this.el.getBoundingClientRect());
+        this.speed = 4;
+        this.direction = "right";
     }
     keyMotion() {
         //히어로의 움직을을 처리
         if (key.keyDown["left"]) {
+            this.direction = "left";
             this.el.classList.add("run", "flip");
-            this.movex = this.movex - this.speed;
-            console.log(`left : ${this.position().left}`);
+
+            this.movex = this.movex <= 0 ? 0 : this.movex - this.speed;
         } else if (key.keyDown["right"]) {
+            this.direction = "right";
             this.el.classList.add("run");
             this.el.classList.remove("flip");
+
             this.movex = this.movex + this.speed;
-            console.log(`right : ${this.position().right}`);
         }
         if (!key.keyDown["left"] && !key.keyDown["right"]) {
             this.el.classList.remove("run");
@@ -64,20 +66,33 @@ class Bullet {
         this.x = 0;
         this.y = 0;
 
-        this.speed = 30;
+        this.speed = 8;
         this.distance = 0;
+        this.bulletDirection = "right";
         this.init();
     }
     init() {
-        this.x = hero.position().left + hero.size().width / 2;
+        this.bulletDirection = hero.direction === "left" ? "left" : "right";
+        this.x =
+            this.bulletDirection === "right"
+                ? hero.movex + hero.size().width / 2
+                : hero.movex - hero.size().width / 2;
+
         this.y = hero.position().bottom - hero.size().height / 2;
         this.distance = this.x;
         this.el.style.transform = `translate(${this.x}px, ${this.y}px)`;
         this.parentNode.appendChild(this.el);
     }
     moveBullet() {
-        this.distance += this.speed;
-        this.el.style.transform = `translate(${this.distance}px, ${this.y}px)`;
+        let setRotate = "";
+        if (this.bulletDirection === "left") {
+            this.distance -= this.speed;
+            setRotate = "rotate(180deg)";
+        } else {
+            this.distance += this.speed;
+            setRotate = "rotate(0deg)";
+        }
+        this.el.style.transform = `translate(${this.distance}px, ${this.y}px) ${setRotate}`;
 
         this.crashBullet();
     }
